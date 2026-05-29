@@ -21,12 +21,13 @@ public class Main extends JFrame {
     // ── Palette ───────────────────────────────────────────────────────────────
     static boolean darkMode = false;
 
-    static Color bg()       { return darkMode ? new Color(18,18,22)    : new Color(248,248,246); }
-    static Color surface()  { return darkMode ? new Color(26,26,32)    : Color.WHITE; }
-    static Color surface2() { return darkMode ? new Color(34,34,42)    : new Color(243,242,239); }
-    static Color border()   { return darkMode ? new Color(50,50,62)    : new Color(218,216,210); }
-    static Color txt()      { return darkMode ? new Color(235,234,230) : new Color(22,22,20); }
-    static Color txtMuted() { return darkMode ? new Color(120,118,114) : new Color(115,113,108); }
+    static Color bg()       { return darkMode ? new Color(15,15,20)    : new Color(248,248,246); }
+    static Color surface()  { return darkMode ? new Color(25,25,32)    : Color.WHITE; }
+    static Color surface2() { return darkMode ? new Color(36,36,46)    : new Color(243,242,239); }
+    static Color border()   { return darkMode ? new Color(58,58,72)    : new Color(218,216,210); }
+    static Color txt()      { return darkMode ? new Color(240,240,245) : new Color(22,22,20); }
+    static Color txtMuted() { return darkMode ? new Color(165,165,175) : new Color(115,113,108); }
+
     static Color accent()   { return new Color(99,102,241); }
     static Color accentHov(){ return new Color(79,82,220); }
 
@@ -283,7 +284,7 @@ public class Main extends JFrame {
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT,6,0));
         toolbar.setOpaque(false); toolbar.setAlignmentX(LEFT_ALIGNMENT);
         toolbar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
-        JButton darkBtn = smallBtn("Dark");
+        JButton darkBtn = smallBtn(darkMode ? "Light" : "Dark");
         darkBtn.addActionListener(e -> { darkMode=!darkMode; darkBtn.setText(darkMode?"Light":"Dark"); refreshTheme(); });
         JButton saveBtn = smallBtn("Αποθηκευση");
         saveBtn.addActionListener(e -> saveToFile());
@@ -340,6 +341,15 @@ public class Main extends JFrame {
 
         // Tabs
         tabs = new JTabbedPane();
+        tabs.setBackground(bg());
+        tabs.setForeground(txt());
+        tabs.setBorder(BorderFactory.createEmptyBorder());
+        tabs.setUI(new javax.swing.plaf.basic.BasicTabbedPaneUI() {
+            @Override
+            protected void paintContentBorder(Graphics g, int tabPlacement, int selectedIndex) {
+                // no default white border
+            }
+        });
         tabs.setFont(FONT_BODY); tabs.setBackground(bg()); tabs.setForeground(txt());
 
         // Tab 1 – Collection
@@ -949,7 +959,11 @@ public class Main extends JFrame {
             });
         }
         protected void paintComponent(Graphics g) {
-            setBackground(darkMode?(alpha>0?new Color(38,38,48):new Color(26,26,32)):(alpha>0?new Color(245,244,241):Color.WHITE));
+            setBackground(
+                    darkMode
+                            ? (alpha > 0 ? new Color(42, 42, 54) : new Color(28, 28, 36))
+                            : (alpha > 0 ? new Color(245,244,241) : Color.WHITE)
+            );
             super.paintComponent(g);
         }
     }
