@@ -1,147 +1,131 @@
-# MediaVault
+# MediaHub
 
-MediaVault is a desktop application written in Java and Swing that allows users to organize and manage their personal media collection in a single place.
+MediaHub is a Java desktop application designed to help users organize, track and manage their personal media collections in a single place.
 
-The application supports movies, TV series, books and video games, making it easy to track what you have watched, read or played.
-
----
+The application supports movies, TV series, books and video games, allowing users to keep detailed information, ratings, progress tracking and personal notes for every item.
 
 ## Features
 
-### Media Management
-- Add movies
-- Add TV series
-- Add books
-- Add video games
-- Edit existing entries
-- Delete entries
+### Media Collection Management
 
-### Detailed Information
-Each media item can store:
+* Add, edit and delete media items
+* Support for Movies, TV Series, Books and Video Games
+* Search functionality
+* Advanced filtering
+* Multiple sorting options
+
+### Rich Media Information
+
+Each item can store detailed information such as:
 
 #### Movies
-- Title
-- Release year
-- Genre
-- Director
-- Actors
-- Watch date
-- Rating
+
+* Title
+* Release year
+* Genre
+* Director
+* Actors
+* Watch date
+* Rating
 
 #### TV Series
-- Title
-- Release year
-- Genre
-- Number of seasons
-- Actors
-- Watch date
-- Rating
+
+* Title
+* Release year
+* Genre
+* Seasons
+* Actors
+* Start date
+* Completion date
+* Rating
 
 #### Books
-- Title
-- Release year
-- Genre
-- Author
-- Number of pages
-- Start date
-- Completion date
-- Rating
+
+* Title
+* Release year
+* Genre
+* Author
+* Publisher
+* Number of pages
+* Start date
+* Completion date
+* Rating
 
 #### Video Games
-- Title
-- Release year
-- Genre
-- Developer
-- Platform
-- Start date
-- Completion date
-- Rating
 
----
+* Title
+* Release year
+* Genre
+* Developer
+* Platform
+* Start date
+* Completion date
+* Rating
+* Platinum achievement tracking
 
-## User Interface
+### User Experience
 
-The application includes:
+* Modern desktop interface
+* Dark Mode / Light Mode
+* Interactive media cards
+* Star-based rating system
+* Favorites support
+* Custom tags
+* Personal notes and reviews
+* Unsaved changes detection before exit
 
-- Modern desktop UI
-- Dark Mode / Light Mode
-- Search functionality
-- Media filtering
-- Sorting options
-- Rating system (1–5 stars)
-- Interactive media cards
-- Statistics dashboard
+### Cover Images
 
----
+* Custom cover image support
+* Local image storage
+* Automatic image loading
 
-## Statistics
+### Statistics Dashboard
 
-MediaVault provides statistics such as:
+* Collection overview
+* Media distribution
+* Rating statistics
+* Category totals
+* Top rated entries
 
-- Total collection size
-- Number of movies
-- Number of series
-- Number of books
-- Number of games
-- Average rating
-- Media distribution charts
-- Top rated entries
+### Data Persistence
 
----
-
-## Data Persistence
-
-The application supports:
-
-- Automatic save
-- Automatic load at startup
-- Manual save to CSV
-- Manual load from CSV
-
-This ensures that your collection is preserved between sessions.
-
----
+* JSON-based storage
+* Automatic save and load
+* Manual import/export support
+* Local image management
 
 ## Technologies Used
 
-- Java
-- Java Swing
-- Object-Oriented Programming (OOP)
-- File Handling
-- CSV Persistence
-
----
+* Java
+* Java Swing
+* Object-Oriented Programming (OOP)
+* JSON Persistence
+* File Handling
+* Collections Framework
 
 ## Project Status
 
-MediaVault is currently under active development.
+MediaHub is under active development.
 
-Current version includes the core collection management functionality and user interface.
+The current version includes a complete media collection management system with statistics, ratings, favorites, cover images and collection tracking.
 
-Planned future improvements include:
+## Planned Improvements
 
-- Cover images and posters
-- Advanced statistics
-- User profiles
-- Collection progress tracking
-- Wishlist support
-- Favorites system
-- Better data visualization
-- Database integration (SQLite)
-- Improved UI/UX
-- Export and backup options
-
----
+* SQLite database support
+* Collection backup system
+* Advanced analytics
+* Recommendation engine
+* Better chart visualizations
+* Collection goals and progress tracking
+* Plugin architecture
 
 ## Author
 
-Grigoris Liatsos
+**Grigoris Liatsos**
 
-GitHub:
-https://github.com/grigorisliatsos
+GitHub: https://github.com/grigorisliatsos
 
----
+## Vision
 
-## Future Vision
-
-The goal of MediaVault is to evolve into a complete personal media management platform where users can track, organize and analyze all forms of entertainment and learning content from a single application.
+MediaHub aims to become a complete personal media management platform where users can organize, analyze and track all forms of entertainment and learning content from a single application.
