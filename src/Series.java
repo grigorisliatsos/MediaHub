@@ -1,6 +1,8 @@
 public class Series extends MediaItem {
     public int    seasons;
     public String actors;
+    public String startDate = "";   // ημερομηνια εναρξης παρακολουθησης
+    public String endDate   = "";   // ημερομηνια ολοκληρωσης
 
     public Series(String title, int year, String genre, int seasons, String actors) {
         super(title, year, genre);

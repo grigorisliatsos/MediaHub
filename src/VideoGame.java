@@ -3,6 +3,8 @@ public class VideoGame extends MediaItem {
     public String platform;   // π.χ. PC, PS5, Xbox
     public String startDate = "";
     public String endDate   = "";
+    public boolean hasPlatinum = false;
+    public String platinumDate = "";
 
     public VideoGame(String title, int year, String genre, String developer, String platform) {
         super(title, year, genre);
@@ -14,7 +16,8 @@ public class VideoGame extends MediaItem {
 
     @Override
     public String getInfo() {
+        String platInfo = hasPlatinum ? " | Platinum: Ναι (" + platinumDate + ")" : "";
         return "Game: " + title + " | Ετος: " + year + " | Ειδος: " + genre
-                + " | Developer: " + developer + " | Platform: " + platform;
+                + " | Developer: " + developer + " | Platform: " + platform + platInfo;
     }
 }
