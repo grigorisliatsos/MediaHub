@@ -645,7 +645,7 @@ public class Main extends JFrame {
 
             // Έλεγχος Διπλοτύπων (Title + Year + Type)
             boolean exists = collection.stream().anyMatch(i ->
-                    i.title.equalsIgnoreCase(title) && i.year == year && typeLabel(i).equalsIgnoreCase(type == "Video Game" ? "Game" : type)
+                    i.getTitle().equalsIgnoreCase(title) && i.getYear() == year && typeLabel(i).equalsIgnoreCase(type == "Video Game" ? "Game" : type)
             );
             if (exists) {
                 int choice = JOptionPane.showConfirmDialog(this, "Αυτός ο τίτλος υπάρχει ήδη για το έτος αυτό. Θέλεις να τον προσθέσεις ξανά;", "Προειδοποίηση Διπλοτύπου", JOptionPane.YES_NO_OPTION);
@@ -654,25 +654,25 @@ public class Main extends JFrame {
 
             MediaItem item;
             switch (type) {
-                case "Ταινια" -> { Movie m = new Movie(title,year,genre,extra1,extra2); m.watchDate=date1; item=m; }
-                case "Σειρα" -> { Series s = new Series(title,year,genre,Integer.parseInt(extra1),extra2); s.startDate=date1; s.endDate=date2; item=s; }
-                case "Βιβλιο" -> { Book b = new Book(title,year,genre,extra1,Integer.parseInt(extra2)); b.publisher=extraField3.getText().trim(); b.startDate=date1; b.endDate=date2; item=b; }
+                case "Ταινια" -> { Movie m = new Movie(title,year,genre,extra1,extra2); m.setWatchDate(date1); item=m; }
+                case "Σειρα" -> { Series s = new Series(title,year,genre,Integer.parseInt(extra1),extra2); s.setStartDate(date1); s.setEndDate(date2); item=s; }
+                case "Βιβλιο" -> { Book b = new Book(title,year,genre,extra1,Integer.parseInt(extra2)); b.setPublisher(extraField3.getText().trim()); b.setStartDate(date1); b.setEndDate(date2); item=b; }
                 case "Video Game" -> {
                     VideoGame g = new VideoGame(title,year,genre,extra1,extra2);
-                    g.startDate=date1; g.endDate=date2;
-                    g.hasPlatinum = platCheckBox.isSelected();
-                    g.platinumDate = g.hasPlatinum ? platDateField.getText().trim() : "";
+                    g.setStartDate(date1); g.setEndDate(date2);
+                    g.setHasPlatinum(platCheckBox.isSelected());
+                    g.setPlatinumDate(g.hasPlatinum() ? platDateField.getText().trim() : "");
                     item=g;
                 }
                 default -> { showToast("Αγνωστος τυπος!", false); return; }
             }
-            item.rating = ratingPanel.getRating();
-            item.imagePath = persistImage(pendingImagePath);
-            item.notes = notesArea.getText().trim();
-            item.status = statusKeyFromLabel((String) statusBox.getSelectedItem());
-            item.favorite = favCheckBox.isSelected();
-            item.tags = parseTags(tagsField.getText());
-            item.added = System.currentTimeMillis();
+            item.setRating(ratingPanel.getRating());
+            item.setImagePath(persistImage(pendingImagePath));
+            item.setNotes(notesArea.getText().trim());
+            item.setStatusKey(statusKeyFromLabel((String) statusBox.getSelectedItem()));
+            item.setFavorite(favCheckBox.isSelected());
+            item.setTags(parseTags(tagsField.getText()));
+            item.setAdded(System.currentTimeMillis());
             applyAutoComplete(item);
             pushUndo();
             collection.add(item);
@@ -686,11 +686,11 @@ public class Main extends JFrame {
     // Αν υπαρχει ημερομηνια ολοκληρωσης (ταινια: παρακολουθηση), η κατασταση γινεται «Ολοκληρωμενο».
     private void applyAutoComplete(MediaItem i) {
         String end = "";
-        if (i instanceof Movie m)        end = m.watchDate;
-        else if (i instanceof Series s)  end = s.endDate;
-        else if (i instanceof Book b)    end = b.endDate;
-        else if (i instanceof VideoGame g) end = g.endDate;
-        if (end != null && !end.trim().isEmpty()) i.status = "completed";
+        if (i instanceof Movie m)        end = m.getWatchDate();
+        else if (i instanceof Series s)  end = s.getEndDate();
+        else if (i instanceof Book b)    end = b.getEndDate();
+        else if (i instanceof VideoGame g) end = g.getEndDate();
+        if (end != null && !end.trim().isEmpty()) i.setStatusKey("completed");
     }
 
     private void clearForm() {
@@ -737,33 +737,33 @@ public class Main extends JFrame {
         // ── Κεφαλιδα: εικονα + τιτλος ──
         JPanel header = new JPanel(new BorderLayout(16,0)); header.setOpaque(false); header.setAlignmentX(LEFT_ALIGNMENT);
         header.setMaximumSize(new Dimension(Integer.MAX_VALUE, 150));
-        ImageIcon thumb = loadThumb(item.imagePath, 92, 130);
+        ImageIcon thumb = loadThumb(item.getImagePath(), 92, 130);
         if (thumb != null) {
             JLabel img=new JLabel(thumb); img.setVerticalAlignment(SwingConstants.TOP);
             img.setBorder(new LineBorder(border(),1,true)); header.add(img, BorderLayout.WEST);
             img.setToolTipText("Κλικ για μεγεθυνση");
             img.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             img.addMouseListener(new MouseAdapter(){
-                @Override public void mouseClicked(MouseEvent e){ showImageFull(item.imagePath, item.title); }
+                @Override public void mouseClicked(MouseEvent e){ showImageFull(item.getImagePath(), item.getTitle()); }
             });
         }
         JPanel tb = new JPanel(); tb.setOpaque(false); tb.setLayout(new BoxLayout(tb, BoxLayout.Y_AXIS));
         JLabel badge = new JLabel(typeLabel(item)); badge.setFont(FONT_LABEL); badge.setOpaque(true);
         badge.setForeground(Color.WHITE); badge.setBackground(typeCol(item)); badge.setBorder(new EmptyBorder(2,8,2,8));
         badge.setAlignmentX(LEFT_ALIGNMENT);
-        JLabel title = new JLabel("<html><div style='width:400px'>"+htmlEsc(item.title)+"</div></html>");
+        JLabel title = new JLabel("<html><div style='width:400px'>"+htmlEsc(item.getTitle())+"</div></html>");
         title.setFont(new Font("Segoe UI",Font.BOLD,18)); title.setForeground(txt()); title.setAlignmentX(LEFT_ALIGNMENT);
-        JLabel sub = new JLabel(item.year+"   ·   "+item.genre); sub.setFont(FONT_BODY); sub.setForeground(txtMuted()); sub.setAlignmentX(LEFT_ALIGNMENT);
-        JLabel stars = new JLabel(starsStr(item.rating)); stars.setFont(FONT_SYM); stars.setForeground(starOn()); stars.setAlignmentX(LEFT_ALIGNMENT);
+        JLabel sub = new JLabel(item.getYear()+"   ·   "+item.getGenre()); sub.setFont(FONT_BODY); sub.setForeground(txtMuted()); sub.setAlignmentX(LEFT_ALIGNMENT);
+        JLabel stars = new JLabel(starsStr(item.getRating())); stars.setFont(FONT_SYM); stars.setForeground(starOn()); stars.setAlignmentX(LEFT_ALIGNMENT);
         tb.add(badge); tb.add(vgap(8)); tb.add(title); tb.add(vgap(5)); tb.add(sub); tb.add(vgap(9)); tb.add(stars);
         JPanel sf = new JPanel(new FlowLayout(FlowLayout.LEFT,6,0)); sf.setOpaque(false); sf.setAlignmentX(LEFT_ALIGNMENT);
         sf.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
-        if (!item.status.isEmpty()) {
-            JLabel pill=new JLabel(statusLabel(item.status)); pill.setFont(FONT_LABEL); pill.setOpaque(true);
-            pill.setForeground(Color.WHITE); pill.setBackground(statusColor(item.status)); pill.setBorder(new EmptyBorder(2,8,2,8));
+        if (!item.getStatusKey().isEmpty()) {
+            JLabel pill=new JLabel(statusLabel(item.getStatusKey())); pill.setFont(FONT_LABEL); pill.setOpaque(true);
+            pill.setForeground(Color.WHITE); pill.setBackground(statusColor(item.getStatusKey())); pill.setBorder(new EmptyBorder(2,8,2,8));
             sf.add(pill);
         }
-        if (item.favorite) {
+        if (item.isFavorite()) {
             JLabel hv=new JLabel("Αγαπημενο", new GlyphIcon(GlyphIcon.Kind.HEART,new Color(229,73,109),14,14), SwingConstants.LEFT);
             hv.setFont(FONT_SMALL); hv.setForeground(new Color(229,73,109)); hv.setIconTextGap(4); sf.add(hv);
         }
@@ -773,33 +773,33 @@ public class Main extends JFrame {
 
         // ── Λεπτομερειες ανα τυπο (στοιχισμενες γραμμες) ──
         if (item instanceof Movie m) {
-            root.add(infoLine("Σκηνοθετης", m.director));
-            root.add(infoLine("Ηθοποιοι", m.actors));
-            root.add(infoLine("Παρακολουθηση", m.watchDate));
+            root.add(infoLine("Σκηνοθετης", m.getDirector()));
+            root.add(infoLine("Ηθοποιοι", m.getActors()));
+            root.add(infoLine("Παρακολουθηση", m.getWatchDate()));
         } else if (item instanceof Series s) {
-            root.add(infoLine("Σεζον", String.valueOf(s.seasons)));
-            root.add(infoLine("Ηθοποιοι", s.actors));
-            root.add(infoLine("Παρακολουθηση", dateRange(s.startDate, s.endDate)));
+            root.add(infoLine("Σεζον", String.valueOf(s.getSeasons())));
+            root.add(infoLine("Ηθοποιοι", s.getActors()));
+            root.add(infoLine("Παρακολουθηση", dateRange(s.getStartDate(), s.getEndDate())));
         } else if (item instanceof Book b) {
-            root.add(infoLine("Συγγραφεας", b.author));
-            root.add(infoLine("Εκδοτης", b.publisher));
-            root.add(infoLine("Σελιδες", String.valueOf(b.pages)));
-            root.add(infoLine("Αναγνωση", dateRange(b.startDate, b.endDate)));
+            root.add(infoLine("Συγγραφεας", b.getAuthor()));
+            root.add(infoLine("Εκδοτης", b.getPublisher()));
+            root.add(infoLine("Σελιδες", String.valueOf(b.getPages())));
+            root.add(infoLine("Αναγνωση", dateRange(b.getStartDate(), b.getEndDate())));
         } else if (item instanceof VideoGame g) {
-            root.add(infoLine("Developer", g.developer));
-            root.add(infoLine("Platform", g.platform));
-            root.add(infoLine("Παιξιμο", dateRange(g.startDate, g.endDate)));
-            if (g.hasPlatinum) root.add(infoLine("Platinum", "Ναι" + (g.platinumDate.isEmpty()?"":"  ("+g.platinumDate+")")));
+            root.add(infoLine("Developer", g.getDeveloper()));
+            root.add(infoLine("Platform", g.getPlatform()));
+            root.add(infoLine("Παιξιμο", dateRange(g.getStartDate(), g.getEndDate())));
+            if (g.hasPlatinum()) root.add(infoLine("Platinum", "Ναι" + (g.getPlatinumDate().isEmpty()?"":"  ("+g.getPlatinumDate()+")")));
         }
-        if (item.tags != null && !item.tags.isEmpty())
-            root.add(infoLine("Ετικετες", "#" + String.join("   #", item.tags)));
+        if (item.getTags() != null && !item.getTags().isEmpty())
+            root.add(infoLine("Ετικετες", "#" + String.join("   #", item.getTags())));
 
         // ── Σημειωσεις ──
-        if (item.notes != null && !item.notes.isEmpty()) {
+        if (item.getNotes() != null && !item.getNotes().isEmpty()) {
             root.add(vgap(4)); root.add(viewDivider()); root.add(vgap(12));
             JLabel nh = new JLabel("ΣΗΜΕΙΩΣΕΙΣ / ΣΧΟΛΙΑ"); nh.setFont(FONT_LABEL); nh.setForeground(txtMuted()); nh.setAlignmentX(LEFT_ALIGNMENT);
             root.add(nh); root.add(vgap(8));
-            JTextArea na = new JTextArea(item.notes); na.setEditable(false); na.setLineWrap(true); na.setWrapStyleWord(true);
+            JTextArea na = new JTextArea(item.getNotes()); na.setEditable(false); na.setLineWrap(true); na.setWrapStyleWord(true);
             na.setFont(FONT_BODY); na.setBackground(surface2()); na.setForeground(txt()); na.setBorder(new EmptyBorder(10,12,10,12));
             JScrollPane nsp = new JScrollPane(na); nsp.setBorder(new LineBorder(border(),1,true));
             nsp.setAlignmentX(LEFT_ALIGNMENT); nsp.setMaximumSize(new Dimension(Integer.MAX_VALUE, 150));
@@ -867,14 +867,14 @@ public class Main extends JFrame {
         root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));
         root.setBackground(surface()); root.setBorder(new EmptyBorder(20,24,20,24));
 
-        JLabel header = new JLabel("Επεξεργασια: " + item.title);
+        JLabel header = new JLabel("Επεξεργασια: " + item.getTitle());
         header.setFont(new Font("Segoe UI",Font.BOLD,15));
         header.setForeground(txt()); header.setAlignmentX(LEFT_ALIGNMENT);
         root.add(header); root.add(vgap(16));
 
-        JTextField eTitleF = dialogField(item.title);
-        JTextField eYearF  = dialogField(String.valueOf(item.year));
-        JTextField eGenreF = dialogField(item.genre);
+        JTextField eTitleF = dialogField(item.getTitle());
+        JTextField eYearF  = dialogField(String.valueOf(item.getYear()));
+        JTextField eGenreF = dialogField(item.getGenre());
         root.add(dialogRow("ΤΙΤΛΟΣ", eTitleF)); root.add(vgap(10));
         root.add(dialogRow("ΕΤΟΣ",   eYearF));  root.add(vgap(10));
         root.add(dialogRow("ΕΙΔΟΣ",  eGenreF)); root.add(vgap(10));
@@ -883,20 +883,20 @@ public class Main extends JFrame {
         JCheckBox ePlatCheck = null;
 
         if (item instanceof Movie m) {
-            eEx1=dialogField(m.director); eEx2=dialogField(m.actors); eD1=dialogField(m.watchDate);
+            eEx1=dialogField(m.getDirector()); eEx2=dialogField(m.getActors()); eD1=dialogField(m.getWatchDate());
             root.add(dialogRow("ΣΚΗΝΟΘΕΤΗΣ",      eEx1)); root.add(vgap(10));
             root.add(dialogRow("ΗΘΟΠΟΙΟΙ",         eEx2)); root.add(vgap(10));
             root.add(dialogDateRow("ΗΜ. ΠΑΡΑΚΟΛ.", eD1));  root.add(vgap(10));
         } else if (item instanceof Series s) {
-            eEx1=dialogField(String.valueOf(s.seasons)); eEx2=dialogField(s.actors);
-            eD1=dialogField(s.startDate); eD2=dialogField(s.endDate);
+            eEx1=dialogField(String.valueOf(s.getSeasons())); eEx2=dialogField(s.getActors());
+            eD1=dialogField(s.getStartDate()); eD2=dialogField(s.getEndDate());
             root.add(dialogRow("ΣΕΖΟΝ",            eEx1)); root.add(vgap(10));
             root.add(dialogRow("ΗΘΟΠΟΙΟΙ",         eEx2)); root.add(vgap(10));
             root.add(dialogDateRow("ΗΜ. ΕΝΑΡΞΗΣ",      eD1));  root.add(vgap(10));
             root.add(dialogDateRow("ΗΜ. ΟΛΟΚΛΗΡΩΣΗΣ", eD2));  root.add(vgap(10));
         } else if (item instanceof Book b) {
-            eEx1=dialogField(b.author); eEx2=dialogField(String.valueOf(b.pages)); ePub=dialogField(b.publisher);
-            eD1=dialogField(b.startDate); eD2=dialogField(b.endDate);
+            eEx1=dialogField(b.getAuthor()); eEx2=dialogField(String.valueOf(b.getPages())); ePub=dialogField(b.getPublisher());
+            eD1=dialogField(b.getStartDate()); eD2=dialogField(b.getEndDate());
             root.add(dialogRow("ΣΥΓΓΡΑΦΕΑΣ",       eEx1)); root.add(vgap(10));
             root.add(dialogRow("ΣΕΛΙΔΕΣ",          eEx2)); root.add(vgap(10));
             root.add(dialogRow("ΕΚΔΟΤΗΣ",          ePub)); root.add(vgap(10));
@@ -904,16 +904,16 @@ public class Main extends JFrame {
             root.add(dialogDateRow("ΗΜ. ΟΛΟΚΛΗΡΩΣΗΣ", eD2));  root.add(vgap(10));
         } else {
             VideoGame g = (VideoGame) item;
-            eEx1=dialogField(g.developer); eEx2=dialogField(g.platform);
-            eD1=dialogField(g.startDate); eD2=dialogField(g.endDate);
+            eEx1=dialogField(g.getDeveloper()); eEx2=dialogField(g.getPlatform());
+            eD1=dialogField(g.getStartDate()); eD2=dialogField(g.getEndDate());
             root.add(dialogRow("DEVELOPER",        eEx1)); root.add(vgap(10));
             root.add(dialogRow("PLATFORM",         eEx2)); root.add(vgap(10));
             root.add(dialogDateRow("ΗΜ. ΕΝΑΡΞΗΣ",      eD1));  root.add(vgap(10));
             root.add(dialogDateRow("ΗΜ. ΟΛΟΚΛΗΡΩΣΗΣ", eD2));  root.add(vgap(10));
 
             JPanel pRow = new JPanel(new GridLayout(1,2,6,0)); pRow.setOpaque(false); pRow.setAlignmentX(LEFT_ALIGNMENT);
-            ePlatCheck = new JCheckBox("Platinum Trophy;", g.hasPlatinum); ePlatCheck.setFont(FONT_SMALL); ePlatCheck.setForeground(txt()); ePlatCheck.setOpaque(false);
-            ePlatDate = dialogField(g.platinumDate); ePlatDate.setEnabled(g.hasPlatinum);
+            ePlatCheck = new JCheckBox("Platinum Trophy;", g.hasPlatinum()); ePlatCheck.setFont(FONT_SMALL); ePlatCheck.setForeground(txt()); ePlatCheck.setOpaque(false);
+            ePlatDate = dialogField(g.getPlatinumDate()); ePlatDate.setEnabled(g.hasPlatinum());
             final JTextField finalEPlatDate = ePlatDate;
             ePlatCheck.addActionListener(e -> finalEPlatDate.setEnabled(((JCheckBox)e.getSource()).isSelected()));
             pRow.add(ePlatCheck); pRow.add(dateWithPicker(ePlatDate));
@@ -921,7 +921,7 @@ public class Main extends JFrame {
         }
 
         root.add(formLabel("ΒΑΘΜΟΛΟΓΙΑ")); root.add(vgap(6));
-        RatingPanel eRating = new RatingPanel(); eRating.setRating(item.rating);
+        RatingPanel eRating = new RatingPanel(); eRating.setRating(item.getRating());
         eRating.setAlignmentX(LEFT_ALIGNMENT); root.add(eRating); root.add(vgap(16));
 
         // Εικονα
@@ -929,7 +929,7 @@ public class Main extends JFrame {
         JPanel imgEditRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         imgEditRow.setOpaque(false); imgEditRow.setAlignmentX(LEFT_ALIGNMENT);
         imgEditRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 70));
-        final String[] editImg = { item.imagePath };
+        final String[] editImg = { item.getImagePath() };
         JLabel preview = new JLabel();
         preview.setPreferredSize(new Dimension(50, 64));
         preview.setHorizontalAlignment(SwingConstants.CENTER);
@@ -948,7 +948,7 @@ public class Main extends JFrame {
 
         // Σημειωσεις / σχολια
         root.add(formLabel("ΣΗΜΕΙΩΣΕΙΣ / ΣΧΟΛΙΑ")); root.add(vgap(6));
-        JTextArea eNotes = new JTextArea(item.notes, 5, 20);
+        JTextArea eNotes = new JTextArea(item.getNotes(), 5, 20);
         eNotes.setLineWrap(true); eNotes.setWrapStyleWord(true);
         eNotes.setFont(FONT_BODY); eNotes.setBackground(surface2()); eNotes.setForeground(txt());
         eNotes.setCaretColor(txt()); eNotes.setBorder(new EmptyBorder(6,8,6,8));
@@ -963,16 +963,16 @@ public class Main extends JFrame {
         // Κατασταση + Αγαπημενο
         root.add(formLabel("ΚΑΤΑΣΤΑΣΗ")); root.add(vgap(6));
         JComboBox<String> eStatus = styledCombo(STATUS_LABELS);
-        eStatus.setSelectedItem(statusLabel(item.status));
+        eStatus.setSelectedItem(statusLabel(item.getStatusKey()));
         eStatus.setMaximumSize(new Dimension(Integer.MAX_VALUE, 34));
         root.add(eStatus); root.add(vgap(10));
-        JCheckBox eFav = new JCheckBox("♥  Αγαπημενο", item.favorite);
+        JCheckBox eFav = new JCheckBox("♥  Αγαπημενο", item.isFavorite());
         eFav.setFont(FONT_SYM); eFav.setForeground(txt()); eFav.setOpaque(false); eFav.setAlignmentX(LEFT_ALIGNMENT);
         root.add(eFav); root.add(vgap(16));
 
         // Ετικετες
         root.add(formLabel("ΕΤΙΚΕΤΕΣ (χωρισμενες με κομμα)")); root.add(vgap(6));
-        JTextField eTags = dialogField(tagsToString(item.tags));
+        JTextField eTags = dialogField(tagsToString(item.getTags()));
         root.add(eTags); root.add(vgap(20));
 
         JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.RIGHT,8,0));
@@ -994,18 +994,18 @@ public class Main extends JFrame {
                     showToast("Ολα τα πεδια ειναι υποχρεωτικα!", false); return;
                 }
                 pushUndo();
-                item.title=nt; item.year=ny; item.genre=ng; item.rating=eRating.getRating();
-                item.imagePath = persistImage(editImg[0]);
-                item.notes = eNotes.getText().trim();
-                item.status = statusKeyFromLabel((String) eStatus.getSelectedItem());
-                item.favorite = eFav.isSelected();
-                item.tags = parseTags(eTags.getText());
-                if (item instanceof Movie m)       { m.director=ne1; m.actors=ne2; m.watchDate=nd1; }
-                else if (item instanceof Series s) { s.seasons=Integer.parseInt(ne1); s.actors=ne2; s.startDate=nd1; s.endDate=fD2!=null?fD2.getText().trim():""; }
-                else if (item instanceof Book b)   { b.author=ne1; b.pages=Integer.parseInt(ne2); b.publisher=fPub!=null?fPub.getText().trim():""; b.startDate=nd1; b.endDate=fD2!=null?fD2.getText().trim():""; }
+                item.setTitle(nt); item.setYear(ny); item.setGenre(ng); item.setRating(eRating.getRating());
+                item.setImagePath(persistImage(editImg[0]));
+                item.setNotes(eNotes.getText().trim());
+                item.setStatusKey(statusKeyFromLabel((String) eStatus.getSelectedItem()));
+                item.setFavorite(eFav.isSelected());
+                item.setTags(parseTags(eTags.getText()));
+                if (item instanceof Movie m)       { m.setDirector(ne1); m.setActors(ne2); m.setWatchDate(nd1); }
+                else if (item instanceof Series s) { s.setSeasons(Integer.parseInt(ne1)); s.setActors(ne2); s.setStartDate(nd1); s.setEndDate(fD2!=null?fD2.getText().trim():""); }
+                else if (item instanceof Book b)   { b.setAuthor(ne1); b.setPages(Integer.parseInt(ne2)); b.setPublisher(fPub!=null?fPub.getText().trim():""); b.setStartDate(nd1); b.setEndDate(fD2!=null?fD2.getText().trim():""); }
                 else if (item instanceof VideoGame g){
-                    g.developer=ne1; g.platform=ne2; g.startDate=nd1; g.endDate=fD2!=null?fD2.getText().trim():"";
-                    if(fPlatCheck != null) { g.hasPlatinum = fPlatCheck.isSelected(); g.platinumDate = g.hasPlatinum ? fPlatDate.getText().trim() : ""; }
+                    g.setDeveloper(ne1); g.setPlatform(ne2); g.setStartDate(nd1); g.setEndDate(fD2!=null?fD2.getText().trim():"");
+                    if(fPlatCheck != null) { g.setHasPlatinum(fPlatCheck.isSelected()); g.setPlatinumDate(g.hasPlatinum() ? fPlatDate.getText().trim() : ""); }
                 }
                 applyAutoComplete(item);
                 refreshList(); showToast("\""+nt+"\" ενημερωθηκε!", true); dlg.dispose();
@@ -1048,20 +1048,20 @@ public class Main extends JFrame {
                     case "game"   -> i instanceof VideoGame;
                     default       -> true;
                 })
-                .filter(i -> !filterFavorite || i.favorite)
-                .filter(i -> i.rating >= filterMinRating)
-                .filter(i -> filterStatus.isEmpty() || filterStatus.equals(i.status))
+                .filter(i -> !filterFavorite || i.isFavorite())
+                .filter(i -> i.getRating() >= filterMinRating)
+                .filter(i -> filterStatus.isEmpty() || filterStatus.equals(i.getStatusKey()))
                 .filter(i -> {
                     if (searchQuery.isEmpty()) return true;
                     String q = searchQuery.toLowerCase();
-                    boolean baseMatch = i.title.toLowerCase().contains(q)
-                            || i.genre.toLowerCase().contains(q)
-                            || i.notes.toLowerCase().contains(q)
-                            || i.tags.stream().anyMatch(t -> t.toLowerCase().contains(q));
-                    if (i instanceof Movie m) return baseMatch || m.director.toLowerCase().contains(q) || m.actors.toLowerCase().contains(q);
-                    if (i instanceof Series s) return baseMatch || s.actors.toLowerCase().contains(q);
-                    if (i instanceof Book b) return baseMatch || b.author.toLowerCase().contains(q);
-                    if (i instanceof VideoGame g) return baseMatch || g.developer.toLowerCase().contains(q) || g.platform.toLowerCase().contains(q);
+                    boolean baseMatch = i.getTitle().toLowerCase().contains(q)
+                            || i.getGenre().toLowerCase().contains(q)
+                            || i.getNotes().toLowerCase().contains(q)
+                            || i.getTags().stream().anyMatch(t -> t.toLowerCase().contains(q));
+                    if (i instanceof Movie m) return baseMatch || m.getDirector().toLowerCase().contains(q) || m.getActors().toLowerCase().contains(q);
+                    if (i instanceof Series s) return baseMatch || s.getActors().toLowerCase().contains(q);
+                    if (i instanceof Book b) return baseMatch || b.getAuthor().toLowerCase().contains(q);
+                    if (i instanceof VideoGame g) return baseMatch || g.getDeveloper().toLowerCase().contains(q) || g.getPlatform().toLowerCase().contains(q);
                     return baseMatch;
                 })
                 .sorted(comparator())
@@ -1083,20 +1083,20 @@ public class Main extends JFrame {
     private Comparator<MediaItem> comparator() {
         int idx = sortBox==null ? 0 : sortBox.getSelectedIndex();
         return switch(idx) {
-            case 1  -> Comparator.comparing((MediaItem i)->i.title.toLowerCase()).reversed();
-            case 2  -> Comparator.comparingInt((MediaItem i)->i.rating).reversed()
-                    .thenComparing(i->i.title.toLowerCase());
-            case 3  -> Comparator.comparingInt((MediaItem i)->i.rating)
-                    .thenComparing(i->i.title.toLowerCase());
-            case 4  -> Comparator.comparingInt((MediaItem i)->i.year).reversed()
-                    .thenComparing(i->i.title.toLowerCase());
-            case 5  -> Comparator.comparingInt((MediaItem i)->i.year)
-                    .thenComparing(i->i.title.toLowerCase());
-            case 6  -> Comparator.comparingLong((MediaItem i)->i.added).reversed()
-                    .thenComparing(i->i.title.toLowerCase());
-            case 7  -> Comparator.comparing((MediaItem i)->!i.favorite)   // αγαπημενα πρωτα
-                    .thenComparing(i->i.title.toLowerCase());
-            default -> Comparator.comparing(i->i.title.toLowerCase());
+            case 1  -> Comparator.comparing((MediaItem i)->i.getTitle().toLowerCase()).reversed();
+            case 2  -> Comparator.comparingInt((MediaItem i)->i.getRating()).reversed()
+                    .thenComparing(i->i.getTitle().toLowerCase());
+            case 3  -> Comparator.comparingInt((MediaItem i)->i.getRating())
+                    .thenComparing(i->i.getTitle().toLowerCase());
+            case 4  -> Comparator.comparingInt((MediaItem i)->i.getYear()).reversed()
+                    .thenComparing(i->i.getTitle().toLowerCase());
+            case 5  -> Comparator.comparingInt((MediaItem i)->i.getYear())
+                    .thenComparing(i->i.getTitle().toLowerCase());
+            case 6  -> Comparator.comparingLong((MediaItem i)->i.getAdded()).reversed()
+                    .thenComparing(i->i.getTitle().toLowerCase());
+            case 7  -> Comparator.comparing((MediaItem i)->!i.isFavorite())   // αγαπημενα πρωτα
+                    .thenComparing(i->i.getTitle().toLowerCase());
+            default -> Comparator.comparing(i->i.getTitle().toLowerCase());
         };
     }
 
@@ -1104,30 +1104,30 @@ public class Main extends JFrame {
         Color col   = typeCol(item); Color colBg = typeBg(item); String tStr = typeLabel(item);
         String detail, dateInfo="";
         if (item instanceof Movie m) {
-            detail="Σκηνοθετης: "+m.director+"  |  Ηθοποιοι: "+m.actors;
-            if (!m.watchDate.isEmpty()) dateInfo="Παρακολ.: "+m.watchDate;
+            detail="Σκηνοθετης: "+m.getDirector()+"  |  Ηθοποιοι: "+m.getActors();
+            if (!m.getWatchDate().isEmpty()) dateInfo="Παρακολ.: "+m.getWatchDate();
         } else if (item instanceof Series s) {
-            detail="Σεζον: "+s.seasons+"  |  Ηθοποιοι: "+s.actors;
-            if (!s.startDate.isEmpty()||!s.endDate.isEmpty())
-                dateInfo="Παρακολ.: "+(s.startDate.isEmpty()?"-":s.startDate)+" -> "+(s.endDate.isEmpty()?"σε εξελιξη":s.endDate);
+            detail="Σεζον: "+s.getSeasons()+"  |  Ηθοποιοι: "+s.getActors();
+            if (!s.getStartDate().isEmpty()||!s.getEndDate().isEmpty())
+                dateInfo="Παρακολ.: "+(s.getStartDate().isEmpty()?"-":s.getStartDate())+" -> "+(s.getEndDate().isEmpty()?"σε εξελιξη":s.getEndDate());
         } else if (item instanceof Book b) {
-            detail="Συγγραφεας: "+b.author+"  |  Σελιδες: "+b.pages;
-            if (!b.startDate.isEmpty()||!b.endDate.isEmpty())
-                dateInfo="Αναγνωση: "+(b.startDate.isEmpty()?"-":b.startDate)+" -> "+(b.endDate.isEmpty()?"σε εξελιξη":b.endDate);
+            detail="Συγγραφεας: "+b.getAuthor()+"  |  Σελιδες: "+b.getPages();
+            if (!b.getStartDate().isEmpty()||!b.getEndDate().isEmpty())
+                dateInfo="Αναγνωση: "+(b.getStartDate().isEmpty()?"-":b.getStartDate())+" -> "+(b.getEndDate().isEmpty()?"σε εξελιξη":b.getEndDate());
         } else {
             VideoGame g=(VideoGame)item;
-            detail="Developer: "+g.developer+"  |  Platform: "+g.platform;
-            if (g.hasPlatinum) detail += "  |  🏆 Platinum: Ναι (" + g.platinumDate + ")";
-            if (!g.startDate.isEmpty()||!g.endDate.isEmpty())
-                dateInfo="Παιξιμο: "+(g.startDate.isEmpty()?"-":g.startDate)+" -> "+(g.endDate.isEmpty()?"σε εξελιξη":g.endDate);
+            detail="Developer: "+g.getDeveloper()+"  |  Platform: "+g.getPlatform();
+            if (g.hasPlatinum()) detail += "  |  🏆 Platinum: Ναι (" + g.getPlatinumDate() + ")";
+            if (!g.getStartDate().isEmpty()||!g.getEndDate().isEmpty())
+                dateInfo="Παιξιμο: "+(g.getStartDate().isEmpty()?"-":g.getStartDate())+" -> "+(g.getEndDate().isEmpty()?"σε εξελιξη":g.getEndDate());
         }
 
         HoverCard card = new HoverCard(); card.setAlignmentX(LEFT_ALIGNMENT); card.setLayout(new BorderLayout(10,0));
         card.setBorder(new CompoundBorder(new LineBorder(border(),1,true), new EmptyBorder(12,14,12,14)));
-        boolean hasMeta = !dateInfo.isEmpty() || !item.status.isEmpty();
-        boolean hasTags = item.tags != null && !item.tags.isEmpty();
+        boolean hasMeta = !dateInfo.isEmpty() || !item.getStatusKey().isEmpty();
+        boolean hasTags = item.getTags() != null && !item.getTags().isEmpty();
         int cardH = 84 + (hasMeta?18:0) + (hasTags?18:0);
-        if (!item.imagePath.isEmpty()) cardH = Math.max(cardH, 92);
+        if (!item.getImagePath().isEmpty()) cardH = Math.max(cardH, 92);
         card.setMaximumSize(new Dimension(Integer.MAX_VALUE, cardH));
 
         JPanel stripe = new JPanel() {
@@ -1139,7 +1139,7 @@ public class Main extends JFrame {
         };
         stripe.setOpaque(false); stripe.setPreferredSize(new Dimension(5,0)); card.add(stripe, BorderLayout.WEST);
 
-        ImageIcon thumb = loadThumb(item.imagePath, 42, 56);
+        ImageIcon thumb = loadThumb(item.getImagePath(), 42, 56);
         JLabel icLbl;
         if (thumb != null) {
             icLbl = new JLabel(thumb);
@@ -1156,11 +1156,11 @@ public class Main extends JFrame {
         JPanel info = new JPanel(); info.setOpaque(false); info.setLayout(new BoxLayout(info, BoxLayout.Y_AXIS));
         JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT,6,0)); row1.setOpaque(false);
         JLabel badge=new JLabel(tStr); badge.setFont(FONT_LABEL); badge.setForeground(col); badge.setBackground(colBg); badge.setOpaque(true); badge.setBorder(new EmptyBorder(2,6,2,6));
-        JLabel tl=new JLabel(item.title); tl.setFont(FONT_CARD); tl.setForeground(txt());
-        JLabel yl=new JLabel("· "+item.year); yl.setFont(FONT_BODY); yl.setForeground(txtMuted());
-        JLabel gl=new JLabel("· "+item.genre); gl.setFont(FONT_BODY); gl.setForeground(txtMuted());
+        JLabel tl=new JLabel(item.getTitle()); tl.setFont(FONT_CARD); tl.setForeground(txt());
+        JLabel yl=new JLabel("· "+item.getYear()); yl.setFont(FONT_BODY); yl.setForeground(txtMuted());
+        JLabel gl=new JLabel("· "+item.getGenre()); gl.setFont(FONT_BODY); gl.setForeground(txtMuted());
         row1.add(badge); row1.add(tl); row1.add(yl); row1.add(gl);
-        if (item.favorite) {
+        if (item.isFavorite()) {
             JLabel heart = new JLabel(new GlyphIcon(GlyphIcon.Kind.HEART, new Color(229,73,109), 14, 14));
             heart.setToolTipText("Αγαπημενο"); row1.add(heart);
         }
@@ -1171,10 +1171,10 @@ public class Main extends JFrame {
 
         if (hasMeta) {
             JPanel row3=new JPanel(new FlowLayout(FlowLayout.LEFT,6,0)); row3.setOpaque(false);
-            if (!item.status.isEmpty()) {
-                JLabel pill = new JLabel(statusLabel(item.status));
+            if (!item.getStatusKey().isEmpty()) {
+                JLabel pill = new JLabel(statusLabel(item.getStatusKey()));
                 pill.setFont(FONT_LABEL); pill.setOpaque(true);
-                pill.setForeground(Color.WHITE); pill.setBackground(statusColor(item.status));
+                pill.setForeground(Color.WHITE); pill.setBackground(statusColor(item.getStatusKey()));
                 pill.setBorder(new EmptyBorder(2,8,2,8));
                 row3.add(pill);
             }
@@ -1186,13 +1186,13 @@ public class Main extends JFrame {
 
         JPanel row4=new JPanel(new FlowLayout(FlowLayout.LEFT,2,1)); row4.setOpaque(false);
         for (int s=1;s<=5;s++) {
-            JLabel star=new JLabel(s<=item.rating?"\u2605":"\u2606");
-            star.setFont(FONT_SYM); star.setForeground(s<=item.rating?starOn():starOff()); row4.add(star);
+            JLabel star=new JLabel(s<=item.getRating()?"\u2605":"\u2606");
+            star.setFont(FONT_SYM); star.setForeground(s<=item.getRating()?starOn():starOff()); row4.add(star);
         }
-        if (item.notes != null && !item.notes.isEmpty()) {
+        if (item.getNotes() != null && !item.getNotes().isEmpty()) {
             JLabel noteLbl = new JLabel(new GlyphIcon(GlyphIcon.Kind.NOTE, accent(), 15, 15));
             noteLbl.setBorder(new EmptyBorder(0,8,0,0));
-            noteLbl.setToolTipText(notesTooltip(item.notes));
+            noteLbl.setToolTipText(notesTooltip(item.getNotes()));
             row4.add(noteLbl);
         }
         info.add(row4);
@@ -1200,7 +1200,7 @@ public class Main extends JFrame {
         if (hasTags) {
             JPanel row5=new JPanel(new FlowLayout(FlowLayout.LEFT,4,1)); row5.setOpaque(false);
             int shown=0;
-            for (String tag : item.tags) {
+            for (String tag : item.getTags()) {
                 if (shown++ >= 4) { JLabel more=new JLabel("…"); more.setFont(FONT_SMALL); more.setForeground(txtMuted()); row5.add(more); break; }
                 JLabel chip=new JLabel("#"+tag);
                 chip.setFont(FONT_SMALL); chip.setForeground(accent());
@@ -1231,7 +1231,7 @@ public class Main extends JFrame {
             pushUndo();
             collection.remove(item);
             refreshList();
-            showToast("Διαγραφηκε \"" + item.title + "\" — πατησε Αναιρεση για επαναφορα", true);
+            showToast("Διαγραφηκε \"" + item.getTitle() + "\" — πατησε Αναιρεση για επαναφορα", true);
         });
         btnCol.add(editBtn); btnCol.add(Box.createVerticalStrut(4)); btnCol.add(delBtn); card.add(btnCol, BorderLayout.EAST);
 
@@ -1261,13 +1261,13 @@ public class Main extends JFrame {
         long series = collection.stream().filter(i->i instanceof Series).count();
         long books  = collection.stream().filter(i->i instanceof Book).count();
         long games  = collection.stream().filter(i->i instanceof VideoGame).count();
-        double avg  = collection.stream().mapToInt(i->i.rating).filter(r->r>0).average().orElse(0);
-        long platinums = collection.stream().filter(i -> i instanceof VideoGame && ((VideoGame) i).hasPlatinum).count();
-        long favs   = collection.stream().filter(i->i.favorite).count();
-        long completed = collection.stream().filter(i->"completed".equals(i.status)).count();
-        long inProgress = collection.stream().filter(i->"in_progress".equals(i.status)).count();
+        double avg  = collection.stream().mapToInt(i->i.getRating()).filter(r->r>0).average().orElse(0);
+        long platinums = collection.stream().filter(i -> i instanceof VideoGame && ((VideoGame) i).hasPlatinum()).count();
+        long favs   = collection.stream().filter(i->i.isFavorite()).count();
+        long completed = collection.stream().filter(i->"completed".equals(i.getStatusKey())).count();
+        long inProgress = collection.stream().filter(i->"in_progress".equals(i.getStatusKey())).count();
         int completedThisYear = (int) collection.stream()
-                .filter(i->"completed".equals(i.status))
+                .filter(i->"completed".equals(i.getStatusKey()))
                 .filter(i->endYearOf(i)==LocalDate.now().getYear()).count();
 
         String topGenre = "Κανένα";
@@ -1325,7 +1325,7 @@ public class Main extends JFrame {
         rh.setFont(new Font("Segoe UI",Font.BOLD,14)); rh.setForeground(txt()); rh.setAlignmentX(LEFT_ALIGNMENT);
         statsPanel.add(rh); statsPanel.add(vgap(10));
         int[] rc = new int[6];
-        for (MediaItem i : collection) if (i.rating>=1 && i.rating<=5) rc[i.rating]++;
+        for (MediaItem i : collection) if (i.getRating()>=1 && i.getRating()<=5) rc[i.getRating()]++;
         int maxRating = 1; for (int s=1;s<=5;s++) maxRating = Math.max(maxRating, rc[s]);
         for (int s=5;s>=1;s--) { statsPanel.add(barRow(starsStr(s), rc[s], maxRating, new Color(234,179,8), FONT_SYM)); statsPanel.add(vgap(6)); }
         statsPanel.add(vgap(14));
@@ -1348,10 +1348,10 @@ public class Main extends JFrame {
             JLabel topT=new JLabel("Top αξιολογησεις");
             topT.setFont(new Font("Segoe UI",Font.BOLD,14)); topT.setForeground(txt()); topT.setAlignmentX(LEFT_ALIGNMENT);
             statsPanel.add(topT); statsPanel.add(vgap(8));
-            collection.stream().filter(i->i.rating>0)
-                    .sorted(Comparator.comparingInt((MediaItem i)->i.rating).reversed()).limit(5)
+            collection.stream().filter(i->i.getRating()>0)
+                    .sorted(Comparator.comparingInt((MediaItem i)->i.getRating()).reversed()).limit(5)
                     .forEach(i -> {
-                        JLabel lbl=new JLabel(starsStr(i.rating)+"  "+i.title+"  ("+i.year+")  ["+typeLabel(i)+"]");
+                        JLabel lbl=new JLabel(starsStr(i.getRating())+"  "+i.getTitle()+"  ("+i.getYear()+")  ["+typeLabel(i)+"]");
                         lbl.setFont(FONT_SYM); lbl.setForeground(txt()); lbl.setAlignmentX(LEFT_ALIGNMENT);
                         statsPanel.add(lbl); statsPanel.add(vgap(4));
                     });
@@ -1363,10 +1363,10 @@ public class Main extends JFrame {
     // Ετος ολοκληρωσης (απο endDate/watchDate) — για στατιστικα "φετος"
     private int endYearOf(MediaItem i) {
         String d = "";
-        if (i instanceof Movie m) d = m.watchDate;
-        else if (i instanceof Series s) d = s.endDate.isEmpty()?s.startDate:s.endDate;
-        else if (i instanceof Book b) d = b.endDate.isEmpty()?b.startDate:b.endDate;
-        else if (i instanceof VideoGame g) d = g.endDate.isEmpty()?g.startDate:g.endDate;
+        if (i instanceof Movie m) d = m.getWatchDate();
+        else if (i instanceof Series s) d = s.getEndDate().isEmpty()?s.getStartDate():s.getEndDate();
+        else if (i instanceof Book b) d = b.getEndDate().isEmpty()?b.getStartDate():b.getEndDate();
+        else if (i instanceof VideoGame g) d = g.getEndDate().isEmpty()?g.getStartDate():g.getEndDate();
         try { return LocalDate.parse(d.trim(), DateTimeFormatter.ofPattern("dd/MM/uuuu")).getYear(); }
         catch (Exception e) { return -1; }
     }
@@ -1395,9 +1395,9 @@ public class Main extends JFrame {
         long series = collection.stream().filter(i->i instanceof Series).count();
         long books  = collection.stream().filter(i->i instanceof Book).count();
         long games  = collection.stream().filter(i->i instanceof VideoGame).count();
-        double avg  = collection.stream().mapToInt(i->i.rating).filter(r->r>0).average().orElse(0);
-        long favs   = collection.stream().filter(i->i.favorite).count();
-        long completed = collection.stream().filter(i->"completed".equals(i.status)).count();
+        double avg  = collection.stream().mapToInt(i->i.getRating()).filter(r->r>0).average().orElse(0);
+        long favs   = collection.stream().filter(i->i.isFavorite()).count();
+        long completed = collection.stream().filter(i->"completed".equals(i.getStatusKey())).count();
         String now = LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 
         StringBuilder h = new StringBuilder();
@@ -1414,7 +1414,7 @@ public class Main extends JFrame {
         h.append(".item .t{font-weight:700;font-size:15px;} .meta{color:#777;font-size:13px;margin:2px 0;}");
         h.append(".stars{color:#eab308;} .pill{display:inline-block;color:#fff;border-radius:10px;padding:1px 8px;font-size:11px;}");
         h.append(".tag{display:inline-block;background:#eef;color:#0b8286;border-radius:8px;padding:1px 7px;font-size:11px;margin-right:4px;}");
-        h.append(".fav{color:#e5496d;} .notes{margin-top:6px;padding:8px 10px;background:#faf9f6;border-left:3px solid #0b8286;white-space:pre-wrap;font-size:13px;}");
+        h.append(".fav{color:#e5496d;} .getNotes(){margin-top:6px;padding:8px 10px;background:#faf9f6;border-left:3px solid #0b8286;white-space:pre-wrap;font-size:13px;}");
         h.append("</style></head><body><div class='wrap'>");
         h.append("<h1>MediaHub — Η συλλογη μου</h1>");
         h.append("<div class='sub'>Δημιουργηθηκε: ").append(now).append("</div>");
@@ -1434,7 +1434,7 @@ public class Main extends JFrame {
         for (String t : order) {
             List<MediaItem> group = collection.stream()
                     .filter(i -> typeLabel(i).equals(t))
-                    .sorted(Comparator.comparing((MediaItem i)->i.title.toLowerCase()))
+                    .sorted(Comparator.comparing((MediaItem i)->i.getTitle().toLowerCase()))
                     .collect(Collectors.toList());
             if (group.isEmpty()) continue;
             h.append("<h2>").append(htmlEsc(t)).append(" (").append(group.size()).append(")</h2>");
@@ -1448,31 +1448,31 @@ public class Main extends JFrame {
     }
     private String reportItem(MediaItem i) {
         StringBuilder b = new StringBuilder("<div class='item'>");
-        b.append("<div class='t'>").append(htmlEsc(i.title)).append(" <span style='color:#999;font-weight:400'>· ").append(i.year).append(" · ").append(htmlEsc(i.genre)).append("</span>");
-        if (i.favorite) b.append(" <span class='fav'>&#9829;</span>");
+        b.append("<div class='t'>").append(htmlEsc(i.getTitle())).append(" <span style='color:#999;font-weight:400'>· ").append(i.getYear()).append(" · ").append(htmlEsc(i.getGenre())).append("</span>");
+        if (i.isFavorite()) b.append(" <span class='fav'>&#9829;</span>");
         b.append("</div>");
         // λεπτομερειες ανα τυπο
         String detail;
-        if (i instanceof Movie m) detail = "Σκηνοθετης: "+htmlEsc(m.director)+" | Ηθοποιοι: "+htmlEsc(m.actors)+dateStr("Παρακολ.", m.watchDate, "");
-        else if (i instanceof Series s) detail = "Σεζον: "+s.seasons+" | Ηθοποιοι: "+htmlEsc(s.actors)+dateStr("Παρακολ.", s.startDate, s.endDate);
-        else if (i instanceof Book bk) detail = "Συγγραφεας: "+htmlEsc(bk.author)+(bk.publisher.isEmpty()?"":" | Εκδοτης: "+htmlEsc(bk.publisher))+" | Σελιδες: "+bk.pages+dateStr("Αναγνωση", bk.startDate, bk.endDate);
-        else { VideoGame g=(VideoGame)i; detail = "Developer: "+htmlEsc(g.developer)+" | Platform: "+htmlEsc(g.platform)+(g.hasPlatinum?" | 🏆 Platinum":"" )+dateStr("Παιξιμο", g.startDate, g.endDate); }
+        if (i instanceof Movie m) detail = "Σκηνοθετης: "+htmlEsc(m.getDirector())+" | Ηθοποιοι: "+htmlEsc(m.getActors())+dateStr("Παρακολ.", m.getWatchDate(), "");
+        else if (i instanceof Series s) detail = "Σεζον: "+s.getSeasons()+" | Ηθοποιοι: "+htmlEsc(s.getActors())+dateStr("Παρακολ.", s.getStartDate(), s.getEndDate());
+        else if (i instanceof Book bk) detail = "Συγγραφεας: "+htmlEsc(bk.getAuthor())+(bk.getPublisher().isEmpty()?"":" | Εκδοτης: "+htmlEsc(bk.getPublisher()))+" | Σελιδες: "+bk.getPages()+dateStr("Αναγνωση", bk.getStartDate(), bk.getEndDate());
+        else { VideoGame g=(VideoGame)i; detail = "Developer: "+htmlEsc(g.getDeveloper())+" | Platform: "+htmlEsc(g.getPlatform())+(g.hasPlatinum()?" | 🏆 Platinum":"" )+dateStr("Παιξιμο", g.getStartDate(), g.getEndDate()); }
         b.append("<div class='meta'>").append(detail).append("</div>");
         // αστερια + κατασταση
-        b.append("<div class='meta'><span class='stars'>").append(starsStr(i.rating)).append("</span>");
-        if (!i.status.isEmpty()) {
-            Color sc = statusColor(i.status);
+        b.append("<div class='meta'><span class='stars'>").append(starsStr(i.getRating())).append("</span>");
+        if (!i.getStatusKey().isEmpty()) {
+            Color sc = statusColor(i.getStatusKey());
             String hex = String.format("#%02x%02x%02x", sc.getRed(), sc.getGreen(), sc.getBlue());
-            b.append(" &nbsp; <span class='pill' style='background:").append(hex).append("'>").append(htmlEsc(statusLabel(i.status))).append("</span>");
+            b.append(" &nbsp; <span class='pill' style='background:").append(hex).append("'>").append(htmlEsc(statusLabel(i.getStatusKey()))).append("</span>");
         }
         b.append("</div>");
-        if (i.tags != null && !i.tags.isEmpty()) {
+        if (i.getTags() != null && !i.getTags().isEmpty()) {
             b.append("<div class='meta'>");
-            for (String tag : i.tags) b.append("<span class='tag'>#").append(htmlEsc(tag)).append("</span>");
+            for (String tag : i.getTags()) b.append("<span class='tag'>#").append(htmlEsc(tag)).append("</span>");
             b.append("</div>");
         }
-        if (i.notes != null && !i.notes.isEmpty())
-            b.append("<div class='notes'>").append(htmlEsc(i.notes)).append("</div>");
+        if (i.getNotes() != null && !i.getNotes().isEmpty())
+            b.append("<div class='notes'>").append(htmlEsc(i.getNotes())).append("</div>");
         b.append("</div>");
         return b.toString();
     }
@@ -1562,40 +1562,40 @@ public class Main extends JFrame {
         String type = i instanceof Movie ? "movie" : i instanceof Series ? "series"
                                                      : i instanceof Book ? "book" : "game";
         b.append(js("type", type)).append(", ");
-        b.append(js("title", i.title)).append(", ");
-        b.append(jn("year", i.year)).append(", ");
-        b.append(js("genre", i.genre)).append(", ");
-        b.append(jn("rating", i.rating)).append(", ");
+        b.append(js("title", i.getTitle())).append(", ");
+        b.append(jn("year", i.getYear())).append(", ");
+        b.append(js("genre", i.getGenre())).append(", ");
+        b.append(jn("rating", i.getRating())).append(", ");
         if (i instanceof Movie m) {
-            b.append(js("director", m.director)).append(", ");
-            b.append(js("actors", m.actors)).append(", ");
-            b.append(js("watchDate", m.watchDate)).append(", ");
+            b.append(js("director", m.getDirector())).append(", ");
+            b.append(js("actors", m.getActors())).append(", ");
+            b.append(js("watchDate", m.getWatchDate())).append(", ");
         } else if (i instanceof Series s) {
-            b.append(jn("seasons", s.seasons)).append(", ");
-            b.append(js("actors", s.actors)).append(", ");
-            b.append(js("startDate", s.startDate)).append(", ");
-            b.append(js("endDate", s.endDate)).append(", ");
+            b.append(jn("seasons", s.getSeasons())).append(", ");
+            b.append(js("actors", s.getActors())).append(", ");
+            b.append(js("startDate", s.getStartDate())).append(", ");
+            b.append(js("endDate", s.getEndDate())).append(", ");
         } else if (i instanceof Book bk) {
-            b.append(js("author", bk.author)).append(", ");
-            b.append(jn("pages", bk.pages)).append(", ");
-            b.append(js("publisher", bk.publisher)).append(", ");
-            b.append(js("startDate", bk.startDate)).append(", ");
-            b.append(js("endDate", bk.endDate)).append(", ");
+            b.append(js("author", bk.getAuthor())).append(", ");
+            b.append(jn("pages", bk.getPages())).append(", ");
+            b.append(js("publisher", bk.getPublisher())).append(", ");
+            b.append(js("startDate", bk.getStartDate())).append(", ");
+            b.append(js("endDate", bk.getEndDate())).append(", ");
         } else {
             VideoGame g=(VideoGame)i;
-            b.append(js("developer", g.developer)).append(", ");
-            b.append(js("platform", g.platform)).append(", ");
-            b.append(js("startDate", g.startDate)).append(", ");
-            b.append(js("endDate", g.endDate)).append(", ");
-            b.append(jb("hasPlatinum", g.hasPlatinum)).append(", ");
-            b.append(js("platinumDate", g.platinumDate)).append(", ");
+            b.append(js("developer", g.getDeveloper())).append(", ");
+            b.append(js("platform", g.getPlatform())).append(", ");
+            b.append(js("startDate", g.getStartDate())).append(", ");
+            b.append(js("endDate", g.getEndDate())).append(", ");
+            b.append(jb("hasPlatinum", g.hasPlatinum())).append(", ");
+            b.append(js("platinumDate", g.getPlatinumDate())).append(", ");
         }
-        b.append(js("imagePath", i.imagePath)).append(", ");
-        b.append(js("notes", i.notes)).append(", ");
-        b.append(js("status", i.status)).append(", ");
-        b.append(jb("favorite", i.favorite)).append(", ");
-        b.append(jl("added", i.added)).append(", ");
-        b.append(ja("tags", i.tags));
+        b.append(js("imagePath", i.getImagePath())).append(", ");
+        b.append(js("notes", i.getNotes())).append(", ");
+        b.append(js("status", i.getStatusKey())).append(", ");
+        b.append(jb("favorite", i.isFavorite())).append(", ");
+        b.append(jl("added", i.getAdded())).append(", ");
+        b.append(ja("tags", i.getTags()));
         return b.toString();
     }
     private String js(String k, String v){ return "\""+k+"\": \""+escapeJson(v)+"\""; }
@@ -1646,14 +1646,14 @@ public class Main extends JFrame {
         String title=gs(m,"title"); int year=gi(m,"year"); String genre=gs(m,"genre");
         MediaItem item;
         switch (type) {
-            case "movie"  -> { Movie x=new Movie(title,year,genre,gs(m,"director"),gs(m,"actors")); x.watchDate=gs(m,"watchDate"); item=x; }
-            case "series" -> { Series x=new Series(title,year,genre,gi(m,"seasons"),gs(m,"actors")); x.startDate=gs(m,"startDate"); x.endDate=gs(m,"endDate"); item=x; }
-            case "book"   -> { Book x=new Book(title,year,genre,gs(m,"author"),gi(m,"pages")); x.publisher=gs(m,"publisher"); x.startDate=gs(m,"startDate"); x.endDate=gs(m,"endDate"); item=x; }
-            case "game"   -> { VideoGame x=new VideoGame(title,year,genre,gs(m,"developer"),gs(m,"platform")); x.startDate=gs(m,"startDate"); x.endDate=gs(m,"endDate"); x.hasPlatinum=gb(m,"hasPlatinum"); x.platinumDate=gs(m,"platinumDate"); item=x; }
+            case "movie"  -> { Movie x=new Movie(title,year,genre,gs(m,"director"),gs(m,"actors")); x.setWatchDate(gs(m,"watchDate")); item=x; }
+            case "series" -> { Series x=new Series(title,year,genre,gi(m,"seasons"),gs(m,"actors")); x.setStartDate(gs(m,"startDate")); x.setEndDate(gs(m,"endDate")); item=x; }
+            case "book"   -> { Book x=new Book(title,year,genre,gs(m,"author"),gi(m,"pages")); x.setPublisher(gs(m,"publisher")); x.setStartDate(gs(m,"startDate")); x.setEndDate(gs(m,"endDate")); item=x; }
+            case "game"   -> { VideoGame x=new VideoGame(title,year,genre,gs(m,"developer"),gs(m,"platform")); x.setStartDate(gs(m,"startDate")); x.setEndDate(gs(m,"endDate")); x.setHasPlatinum(gb(m,"hasPlatinum")); x.setPlatinumDate(gs(m,"platinumDate")); item=x; }
             default -> { return null; }
         }
-        item.rating=gi(m,"rating"); item.imagePath=gs(m,"imagePath"); item.notes=gs(m,"notes");
-        item.status=gs(m,"status"); item.favorite=gb(m,"favorite"); item.added=gL(m,"added"); item.tags=gl(m,"tags");
+        item.setRating(gi(m,"rating")); item.setImagePath(gs(m,"imagePath")); item.setNotes(gs(m,"notes"));
+        item.setStatusKey(gs(m,"status")); item.setFavorite(gb(m,"favorite")); item.setAdded(gL(m,"added")); item.setTags(gl(m,"tags"));
         return item;
     }
     private static String gs(Map<String,Object> m, String k){ Object o=m.get(k); return o==null?"":o.toString(); }
@@ -1698,20 +1698,20 @@ public class Main extends JFrame {
             String d1=p.length>7?p[7]:"", d2=p.length>8?p[8]:"";
             MediaItem item;
             switch (type) {
-                case "movie"  -> { Movie m=new Movie(title,year,genre,e1,e2); m.watchDate=d1; item=m; }
-                case "series" -> { Series s=new Series(title,year,genre,Integer.parseInt(e1.trim()),e2); s.startDate=d1; s.endDate=d2; item=s; }
-                case "book"   -> { Book b=new Book(title,year,genre,e1,Integer.parseInt(e2.trim())); b.startDate=d1; b.endDate=d2; item=b; }
+                case "movie"  -> { Movie m=new Movie(title,year,genre,e1,e2); m.setWatchDate(d1); item=m; }
+                case "series" -> { Series s=new Series(title,year,genre,Integer.parseInt(e1.trim()),e2); s.setStartDate(d1); s.setEndDate(d2); item=s; }
+                case "book"   -> { Book b=new Book(title,year,genre,e1,Integer.parseInt(e2.trim())); b.setStartDate(d1); b.setEndDate(d2); item=b; }
                 case "game"   -> {
-                    VideoGame g=new VideoGame(title,year,genre,e1,e2); g.startDate=d1; g.endDate=d2;
-                    if (p.length > 9) g.hasPlatinum = Boolean.parseBoolean(p[9]);
-                    if (p.length > 10) g.platinumDate = p[10];
+                    VideoGame g=new VideoGame(title,year,genre,e1,e2); g.setStartDate(d1); g.setEndDate(d2);
+                    if (p.length > 9) g.setHasPlatinum(Boolean.parseBoolean(p[9]));
+                    if (p.length > 10) g.setPlatinumDate(p[10]);
                     item=g;
                 }
                 default -> { return null; }
             }
-            item.rating=rating;
-            if (p.length > 11) item.imagePath = p[11];
-            if (p.length > 12) item.notes = decodeNotes(p[12]);
+            item.setRating(rating);
+            if (p.length > 11) item.setImagePath(p[11]);
+            if (p.length > 12) item.setNotes(decodeNotes(p[12]));
             return item;
         } catch (Exception ex) { return null; }
     }
@@ -1881,21 +1881,21 @@ public class Main extends JFrame {
     private MediaItem cloneItem(MediaItem i) {
         MediaItem c;
         if (i instanceof Movie m) {
-            c = new Movie(m.title, m.year, m.genre, m.director, m.actors);
+            c = new Movie(m.getTitle(), m.getYear(), m.getGenre(), m.getDirector(), m.getActors());
         } else if (i instanceof Series s) {
-            Series x = new Series(s.title, s.year, s.genre, s.seasons, s.actors);
-            x.startDate = s.startDate; x.endDate = s.endDate; c = x;
+            Series x = new Series(s.getTitle(), s.getYear(), s.getGenre(), s.getSeasons(), s.getActors());
+            x.setStartDate(s.getStartDate()); x.setEndDate(s.getEndDate()); c = x;
         } else if (i instanceof Book b) {
-            Book x = new Book(b.title, b.year, b.genre, b.author, b.pages);
-            x.publisher = b.publisher; x.startDate = b.startDate; x.endDate = b.endDate; c = x;
+            Book x = new Book(b.getTitle(), b.getYear(), b.getGenre(), b.getAuthor(), b.getPages());
+            x.setPublisher(b.getPublisher()); x.setStartDate(b.getStartDate()); x.setEndDate(b.getEndDate()); c = x;
         } else {
             VideoGame g = (VideoGame) i;
-            VideoGame x = new VideoGame(g.title, g.year, g.genre, g.developer, g.platform);
-            x.startDate = g.startDate; x.endDate = g.endDate;
-            x.hasPlatinum = g.hasPlatinum; x.platinumDate = g.platinumDate; c = x;
+            VideoGame x = new VideoGame(g.getTitle(), g.getYear(), g.getGenre(), g.getDeveloper(), g.getPlatform());
+            x.setStartDate(g.getStartDate()); x.setEndDate(g.getEndDate());
+            x.setHasPlatinum(g.hasPlatinum()); x.setPlatinumDate(g.getPlatinumDate()); c = x;
         }
-        c.rating = i.rating; c.watchDate = i.watchDate; c.imagePath = i.imagePath; c.notes = i.notes;
-        c.status = i.status; c.favorite = i.favorite; c.tags = new ArrayList<>(i.tags); c.added = i.added;
+        c.setRating(i.getRating()); c.setWatchDate(i.getWatchDate()); c.setImagePath(i.getImagePath()); c.setNotes(i.getNotes());
+        c.setStatusKey(i.getStatusKey()); c.setFavorite(i.isFavorite()); c.setTags(new ArrayList<>(i.getTags())); c.setAdded(i.getAdded());
         return c;
     }
 
